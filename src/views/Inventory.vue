@@ -56,13 +56,13 @@
                 type="text"
                 v-model="ean"
                 :disabled="source.length == 0"
-                placeholder="Ean"
+                placeholder="ean"
                 class="form-control form-control-lg"
                 required
               />
             </div>
           </div>
-          <small class="text-muted">Input bez validace</small>
+          <small class="text-muted">Verze bez validace inputu</small>
         </form>
       </div>
       <div class="row mt-4">
@@ -163,7 +163,7 @@
             <table id="tableau" class="table table-sm">
               <thead>
                 <tr>
-                  <th>ean</th>
+                  <th>Ean</th>
                   <th>Název</th>
                   <th>Množství</th>
                 </tr>
@@ -172,9 +172,9 @@
                 <tr
                   v-for="(row, index) in source"
                   :data-index="index"
-                  :key="row.intean"
+                  :key="index"
                 >
-                  <td>{{ row.intean }}</td>
+                  <td>{{ row.ean }}</td>
                   <td>{{ row.název }}</td>
                   <td>{{ row.množství }}</td>
                 </tr>
@@ -192,7 +192,7 @@
         <div class="col-6">
           <div class="row">
             <div class="col-6">
-              <h5 class="text-muted">Data ke srovnání data</h5>
+              <h5 class="text-muted">Data ke srovnání</h5>
             </div>
             <div class="col-6 text-right">
               <small>Počet záznamů: {{ comparing.length }}</small>
@@ -202,7 +202,7 @@
             <table id="tableau" class="table table-sm">
               <thead>
                 <tr>
-                  <th>ean</th>
+                  <th>Ean</th>
                   <th>Název</th>
                   <th>Množství</th>
                 </tr>
@@ -211,9 +211,9 @@
                 <tr
                   v-for="(row, index) in comparing"
                   :data-index="index"
-                  :key="row.intean"
+                  :key="row.ean"
                 >
-                  <td>{{ row.intean }}</td>
+                  <td>{{ row.ean }}</td>
                   <td>{{ row.název }}</td>
                   <td>{{ row.množství }}</td>
                 </tr>
@@ -254,7 +254,7 @@
         </thead>
         <tbody>
           <tr v-for="(ean, index) in over" :data-index="index" :key="ean.ean">
-            <td>{{ ean.intean }}</td>
+            <td>{{ ean.ean }}</td>
             <td>{{ ean.množství }}</td>
             <td>
               <div class="btn-group float-right">
@@ -316,13 +316,13 @@
         </thead>
         <tbody v-if="matched">
           <tr v-for="(match, index) in matched" :key="match.id">
-            <td>{{ match.intean }}</td>
+            <td>{{ match.ean }}</td>
             <td>{{ match.název }}</td>
             <td>{{ match.množství }}</td>
             <td>
               <div class="btn-group float-right">
                 <button
-                  @click="searchEan(match.intean)"
+                  @click="searchEan(match.ean)"
                   class="btn btn-outline-secondary btn-sm"
                 >
                   +
@@ -391,7 +391,7 @@ export default {
     compareData() {
       this.comparing.forEach((el) => {
         while (el.množství > 0) {
-          this.searchEan(el.intean);
+          this.searchEan(el.ean);
           el.množství--;
         }
       });
@@ -422,7 +422,7 @@ export default {
     removeAllMatched(ean, i) {
       let match = false;
       this.source.forEach((el) => {
-        if (el.intean == ean.intean) {
+        if (el.ean == ean.ean) {
           el.množství = el.množství + ean.množství;
           match = true;
         }
@@ -437,7 +437,7 @@ export default {
       else ean.množství--;
 
       this.source.forEach((el) => {
-        if (el.intean == ean.intean) {
+        if (el.ean == ean.ean) {
           el.množství++;
           match = true;
           return;
@@ -460,7 +460,7 @@ export default {
       var ws_data = [["EAN", "Název", "Množství"]];
 
       data.forEach((element) => {
-        ws_data.push([element.intean, element.název, element.množství]);
+        ws_data.push([element.ean, element.název, element.množství]);
       });
 
       var ws = XLSX.utils.aoa_to_sheet(ws_data);
@@ -523,20 +523,24 @@ export default {
 
       let match;
 
-      /*
-      PATTERN VALIDATION DISABLED FOR THIS VERSION
-      const pattern = /^[0-9]{13}$/;
+      /* 
+
+NO VALIDATION FOR THIS VERSION
+
+const pattern = /^[0-9]{13}$/;
 
       if (!pattern.test(ean)) {
         this.wronginput(ean);
         if (playSound) this.playErr();
         this.ean = "";
         return;
-      }*/
+      }
+
+      */
 
       for (let index = 0; index < this.source.length; index++) {
         const element = this.source[index];
-        if (element.intean == ean) {
+        if (element.ean == ean) {
           // Check quantity
           if (element.množství == 1) {
             this.source.splice(index, 1);
@@ -552,12 +556,12 @@ export default {
       if (match) {
         let increased = false;
         if (playSound) {
-          this.added(match.intean);
+          this.added(match.ean);
           this.playScs();
         }
 
         this.matched.forEach((element) => {
-          if (element.intean == match.intean) {
+          if (element.ean == match.ean) {
             increased = true;
             element.množství++;
           }
@@ -568,16 +572,16 @@ export default {
         let matched = false;
 
         const item = {
-          intean: ean,
+          ean: ean,
           množství: 1,
         };
 
         this.over.forEach((element) => {
-          if (element.intean == item.intean) {
+          if (element.ean == item.ean) {
             element.množství++;
             matched = true;
             if (playSound) {
-              this.notFound(element.intean);
+              this.notFound(element.ean);
               this.playErr();
             }
           }
@@ -585,7 +589,7 @@ export default {
         if (!matched) {
           this.over.push(item);
           if (playSound) {
-            this.notFound(item.intean);
+            this.notFound(item.ean);
             this.playErr();
           }
         }
